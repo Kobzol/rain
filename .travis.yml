@@ -14,3 +14,4 @@ jobs:
       script: docker run -u 123 -e RAIN_TEST_BIN=/rain/target/release/rain -e RUST_TASK_TESTER=/rain/target/release/rain_task_test rain pytest -x -v --timeout=300
     - stage: test
       script: docker run rain /bin/bash -c '. $HOME/.cargo/env && utils/checks/stylecheck.sh'
+      if: branch = master
