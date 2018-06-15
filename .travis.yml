@@ -1,16 +1,17 @@
+language: rust
+dist: trusty
 sudo: false
-services:
-  - docker
-before_install:
-  - docker build . -t rain
+cache: cargo
 stages:
+  - build
   - test
+before_install:
+  - apt-get update
+  - apt-get install capnproto
+  - cargo install capnpc
 jobs:
   include:
+    - stage: build
+      script: cargo build --all-features --release --verbose
     - stage: test
-      script: docker run rain /bin/bash -c '. $HOME/.cargo/env && cargo test -- --test-threads=1'
-    - stage: test
-      script: docker run -u 123 -e RAIN_TEST_BIN=/rain/target/release/rain -e RUST_TASK_TESTER=/rain/target/release/rain_task_test rain pytest -x -v --timeout=300
-    - stage: test
-      script: docker run rain /bin/bash -c '. $HOME/.cargo/env && utils/checks/stylecheck.sh'
-      if: branch = master
+      script: cargo test --verbose
