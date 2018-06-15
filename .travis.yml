@@ -4,8 +4,8 @@ stages:
   - build
   - test
 before_install:
-  - apt-get update
-  - apt-get install -y capnproto
+  - sudo apt-get update
+  - sudo apt-get install -y capnproto
   - cargo install capnpc
 jobs:
   include:
