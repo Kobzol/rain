@@ -1,13 +1,11 @@
 language: rust
-dist: trusty
-sudo: false
 cache: cargo
 stages:
   - build
   - test
 before_install:
   - apt-get update
-  - apt-get install capnproto
+  - apt-get install -y capnproto
   - cargo install capnpc
 jobs:
   include:
