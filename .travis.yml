@@ -1,15 +1,25 @@
-language: rust
-cache: cargo
-stages:
-  - build
-  - test
+deploy:
+  provider: releases
+  api_key:
+    secure: gHgpovIrPn9rEcfCt8ro3+NVFn4c2e+vqnui5krbgeXgvt6/uOjmVJaIQpn28tN6Q6UwphWqfq7o6kymLIlHCvv/s8TQ1NLz4G2X0HJPEjtipVs8B5wbW9vzCJmLOCdoMahzB0iSPmI49af+l6UiRXFOjcgYGz86HnD2t07od9X4oJGqw04MTu1Ub4pvFS3jR3hkdR8zao3uCvmvdNAf3lGThswEMEljP2HKNtxnsQR7Ls+RDZ+uAedF1+LeSXfjHsS5oUY6N+uMzB+J7iRX7n0cRlfoFPcTpao9S7MQXiOvVB5qYwIF126EzBx+3nrs0oXEawQm6awQo9bumpXzu6EWcI7Zcd0F6PAfcHuJd/nUb31FIPSSFr0IgeIYG0qD2xL/blBJyLFknrfPR/pXgYl7QvZMuTtOsYS7+1GBSjZpRxz6gnodevAZZvVFhI1xajDDIQg0jufpFdyFrDu1SNdYZO3NCR4PjMM35cKwDXvECnZXE2wTHqHJrxf+o6qmlq00S2KChFH8SQy1CdNpkTiHNp5YxASsiN22SqgjArG4//iDFYnwPotjOxNKOqyMyqDkTucu3ZViow/R6Kd3Ze61PfjKoMQnr3SuIaPCaPZy+2CS1dBZoIAcWLGEKzsGKHPMZMjhIE764yC3sBXLuQErTYfjUmuhcKPnhq35HTI=
+  file: "/rain/target/release/rain"
+  skip_cleanup: true
+  on:
+    repo: Kobzol/rain
+    tags: true
+services:
+  - docker
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install -y capnproto
-  - cargo install capnpc
+  - docker build . -t rain
+stages:
+  - test
 jobs:
   include:
-    - stage: build
-      script: cargo build --all-features --release --verbose
-    - stage: test
-      script: cargo test --verbose
+  - stage: test
+    script: docker run rain /bin/bash -c '. $HOME/.cargo/env && cargo test -- --test-threads=1'
+  - stage: test
+    script: docker run -u 123 -e RAIN_TEST_BIN=/rain/target/release/rain -e RUST_TASK_TESTER=/rain/target/release/rain_task_test
+      rain pytest -x -v --timeout=300
+  - stage: test
+    script: docker run rain /bin/bash -c '. $HOME/.cargo/env && utils/checks/stylecheck.sh'
+    if: branch = master
